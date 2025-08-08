@@ -1,0 +1,44 @@
+/* src/components/AddStudentModal.css */
+
+.student-modal-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  scroll-margin-top: 80px;
+  min-height: 100vh; /* ✅ Full screen height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.student-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.student-form input,
+.student-form select {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.student-form button {
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+.student-form .cancel-btn {
+  background: #f44336;
+}

@@ -1,0 +1,93 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db');
+
+// Function to generate the next store number
+async function generateNextStoreNumber() {
+  const [rows] = await db.execute('SELECT MAX(id) as lastId FROM student_accounts');
+  const lastId = rows[0].lastId || 0;
+  const nextId = lastId + 1;
+  return `STU${10000 + nextId}`;
+}
+
+router.post('/add-student', async (req, res) => {
+  const {
+    full_name,
+    email,
+    dob,
+    gender,
+    phone_number,
+    admission_number,
+    branch,
+    year,
+    course_type,
+    transaction_id
+  } = req.body;
+
+  try {
+    // Generate next store number
+    const store_number = await generateNextStoreNumber();
+
+    const query = `
+      INSERT INTO student_accounts (
+        store_number, full_name, email, dob, gender,
+        phone_number, admission_number, branch, year,
+        course_type, transaction_id
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+      store_number, full_name, email, dob, gender,
+      phone_number, admission_number, branch, year,
+      course_type, transaction_id
+    ];
+
+    await db.execute(query, values);
+
+    res.status(201).json({ success: true, store_number });
+  } catch (error) {
+    console.error('Error adding student:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
+
+
+router.get('/low-balance', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT id, full_name, store_number,year, store_amount
+      FROM student_accounts
+      WHERE store_amount < 50
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching low balance students:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
+
+router.get('/dashboard-stats', async (req, res) => {
+  try {
+    const [students] = await db.query(`SELECT COUNT(*) AS total_students FROM student_accounts`);
+    const [lowBalance] = await db.query(`SELECT COUNT(*) AS low_balance_students FROM student_accounts WHERE store_amount < 50`);
+    const [transactions] = await db.query(`SELECT COUNT(*) AS total_transactions, SUM(total_price) AS total_spent FROM transactions`);
+   
+    res.json({
+      total_students: students[0].total_students,
+      low_balance_students: lowBalance[0].low_balance_students,
+      total_transactions: transactions[0].total_transactions,
+      total_spent: transactions[0].total_spent || 0,
+    });
+  } catch (err) {
+    console.error("Dashboard stats error:", err);
+    res.status(500).json({ error: "Database error while fetching dashboard stats" });
+  }
+});
+
+
+module.exports = router;

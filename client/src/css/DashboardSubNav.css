@@ -1,0 +1,36 @@
+.dashboard-subnav {
+  margin-top: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.subnav-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.subnav-buttons button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #eee;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  font-weight: 500;
+}
+
+.subnav-buttons button.active {
+  background-color: #4f46e5;
+  color: #fff;
+}
+
+.subnav-buttons button:hover:not(.active) {
+  background-color: #ddd;
+}
+
+.subnav-content {
+  margin-top: 10px;
+}
