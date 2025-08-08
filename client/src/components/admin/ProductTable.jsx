@@ -1,16 +1,69 @@
 import React, { useEffect, useState } from 'react';
-import '../../css/inventory.css'; // Reuse same stylesheet
+import '../../css/inventory.css';
+import EditProductModal from './EditProductModal';
+import axios from 'axios';
 
 const ProductTable = () => {
   const [products, setProducts] = useState([]);
+  const [editingItem, setEditingItem] = useState(null);
 
-  // Fetch inventory from backend
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/inventory/list');
+      const data = await res.json();
+      setProducts(data);
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+    }
+  };
+
   useEffect(() => {
-    fetch('http://localhost:5000/api/inventory/list')// adjust if using proxy
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error('Error fetching inventory:', err));
+    fetchProducts();
   }, []);
+
+  const handleEditClick = (item) => {
+    setEditingItem(item);
+  };
+
+  const handleModalClose = () => {
+    setEditingItem(null);
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this product?");
+    if (!confirmed) return;
+
+    try {
+      const res = await axios.delete(`http://localhost:5000/api/inventory/delete/${id}`);
+      alert("Product deleted!");
+      fetchProducts(); // Refresh the table
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product");
+    }
+  };
+
+  const handleSaveProduct = async (updatedData) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/inventory/update/${updatedData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        alert('Product updated successfully!');
+        setEditingItem(null); // close modal
+        fetchProducts();       // refresh table
+      } else {
+        alert('Failed to update product');
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+    }
+  };
 
   return (
     <div className="product-table-wrapper">
@@ -26,7 +79,6 @@ const ProductTable = () => {
             <th>Actions</th>
           </tr>
         </thead>
-
         <tbody>
           {products.length === 0 ? (
             <tr>
@@ -42,14 +94,22 @@ const ProductTable = () => {
                 <td>{item.price}</td>
                 <td>{new Date(item.date_added).toLocaleDateString()}</td>
                 <td>
-                  <button className="action-button edit">Edit</button>
-                  <button className="action-button delete">Delete</button>
+                  <button className="action-button edit" onClick={() => handleEditClick(item)}>Edit</button>
+                  <button className="action-button delete" onClick={() => handleDelete(item.id)}>Delete</button>
                 </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+
+      {editingItem && (
+        <EditProductModal
+          item={editingItem}
+          onClose={handleModalClose}
+          onSave={handleSaveProduct}
+        />
+      )}
     </div>
   );
 };

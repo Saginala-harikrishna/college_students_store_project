@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const db = require('../db'); // This must be a proper MySQL connection or pool from `mysql2/promise`
 
 // POST /api/inventory - Add new inventory item
 router.post('/', async (req, res) => {
@@ -12,13 +12,10 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Make sure the table exists or has been created in your MySQL database
     const query = `
-      INSERT INTO inventory_items
-      (product_name, category, quantity, price, description)
+      INSERT INTO inventory_items (product_name, category, quantity, price, description)
       VALUES (?, ?, ?, ?, ?)
     `;
-
     const [result] = await db.execute(query, [
       product_name,
       category,
@@ -26,22 +23,17 @@ router.post('/', async (req, res) => {
       price,
       description
     ]);
-
     res.status(200).json({
       message: 'Item added successfully',
       insertedId: result.insertId
     });
   } catch (err) {
     console.error('DB Error while inserting item:', err);
-    if (err.code === 'ER_NO_SUCH_TABLE') {
-      return res.status(500).json({ error: 'Database table "inventory_items" not found. Please create the table.' });
-    }
     res.status(500).json({ error: 'Database error occurred' });
   }
 });
 
-
-
+// GET /api/inventory/list - Fetch all inventory
 router.get('/list', async (req, res) => {
   try {
     const [rows] = await db.execute('SELECT * FROM inventory_items ORDER BY date_added DESC');
@@ -52,35 +44,61 @@ router.get('/list', async (req, res) => {
   }
 });
 
-
-
-router.put('/edit/:id', async (req, res) => {
-  const itemId = req.params.id;
+// PUT /api/inventory/update/:id - Update item
+router.put('/update/:id', async (req, res) => {
+  const { id } = req.params;
   const { product_name, category, quantity, price, description } = req.body;
 
-  const allowedCategories = ['Stationary', 'Food', 'Electronics', 'Services'];
-  if (!allowedCategories.includes(category)) {
-    return res.status(400).json({ error: 'Invalid category' });
+  // Input validation
+  if (
+    !id || !product_name || !category || quantity === undefined || price === undefined
+  ) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
     const query = `
-      UPDATE inventory_items 
+      UPDATE inventory_items
       SET product_name = ?, category = ?, quantity = ?, price = ?, description = ?
       WHERE id = ?
     `;
-    const [result] = await db.execute(query, [product_name, category, quantity, price, description, itemId]);
+   const { product_name, category, quantity, price, description } = req.body;
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Item not found for update' });
-    }
+// Replace undefined with null
+const safeDescription = description ?? null;
+
+await db.execute(query, [
+  product_name,
+  category,
+  quantity,
+  price,
+  safeDescription,  
+  id
+]);
 
     res.status(200).json({ message: 'Item updated successfully' });
   } catch (err) {
-    console.error('DB Error while updating item:', err);
-    res.status(500).json({ error: 'Database error occurred' });
+    console.error('Error updating item:', err);
+    res.status(500).json({ error: 'Failed to update inventory item' });
   }
 });
+
+
+// DELETE a product by ID
+router.delete('/delete/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await db.execute("DELETE FROM  inventory_items WHERE id = ?", [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 
 
 module.exports = router;
