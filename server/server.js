@@ -4,6 +4,9 @@ const app = express();
 
 const authRoutes = require("./routes/auth");
 const studentRoutes = require('./routes/student');
+const inventoryRoutes = require('./routes/inventory');
+
+
 
 
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -11,6 +14,7 @@ app.use(express.json());
 
 app.use("/api", authRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 
 const PORT = 5000;

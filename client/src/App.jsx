@@ -4,6 +4,7 @@ import Home from './components/Home';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminLayout from './components/admin/AdminLayout';
+import Inventory from './pages/admin/Inventory';
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         {/* Admin Layout Routes */}
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
+           <Route path="inventory" element={<Inventory />} />
           {/* Later: Add billing, inventory, transactions here */}
         </Route>
       </Routes>
