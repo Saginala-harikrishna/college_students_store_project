@@ -52,13 +52,10 @@ router.post('/add-student', async (req, res) => {
   }
 });
 
-
-
-
 router.get('/low-balance', async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT id, full_name, store_number,year, store_amount
+      SELECT id, full_name, store_number, year, store_amount
       FROM student_accounts
       WHERE store_amount < 50
     `);
@@ -68,8 +65,6 @@ router.get('/low-balance', async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
-
 
 router.get('/dashboard-stats', async (req, res) => {
   try {
@@ -89,5 +84,38 @@ router.get('/dashboard-stats', async (req, res) => {
   }
 });
 
+// =============================
+// Search student by store number
+// =============================
+router.get('/search/:storeNumber', async (req, res) => {
+  const storeNumber = req.params.storeNumber;
+
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT 
+        full_name AS name,
+        admission_number,
+        email,
+        year,
+        branch AS department,
+        store_amount
+      FROM student_accounts
+      WHERE store_number = ?
+      LIMIT 1
+      `,
+      [storeNumber]
+    );
+
+    if (rows.length > 0) {
+      res.status(200).json(rows[0]);
+    } else {
+      res.status(404).json({ message: 'Student not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching student data:', error);
+    res.status(500).json({ message: 'Database error' });
+  }
+});
 
 module.exports = router;

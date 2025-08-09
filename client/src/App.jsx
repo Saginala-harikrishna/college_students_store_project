@@ -5,6 +5,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminLayout from './components/admin/AdminLayout';
 import Inventory from './pages/admin/Inventory';
+import BillingPage from './pages/admin/BillingPage';
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
            <Route path="inventory" element={<Inventory />} />
+                <Route path="billing" element={<BillingPage />} />
           {/* Later: Add billing, inventory, transactions here */}
         </Route>
       </Routes>

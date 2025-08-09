@@ -17,5 +17,6 @@ app.use('/api/student', studentRoutes);
 app.use('/api/inventory', inventoryRoutes);
 
 
+
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
