@@ -94,6 +94,7 @@ router.get('/search/:storeNumber', async (req, res) => {
     const [rows] = await db.query(
       `
       SELECT 
+        id, 
         full_name AS name,
         admission_number,
         email,
@@ -108,7 +109,7 @@ router.get('/search/:storeNumber', async (req, res) => {
     );
 
     if (rows.length > 0) {
-      res.status(200).json(rows[0]);
+      res.status(200).json(rows[0]); 
     } else {
       res.status(404).json({ message: 'Student not found' });
     }
@@ -117,5 +118,6 @@ router.get('/search/:storeNumber', async (req, res) => {
     res.status(500).json({ message: 'Database error' });
   }
 });
+
 
 module.exports = router;

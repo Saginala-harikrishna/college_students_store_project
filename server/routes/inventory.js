@@ -101,4 +101,33 @@ router.delete('/delete/:id', async (req, res) => {
 
 
 
+
+router.get("/student/:id/balance", async (req, res) => {
+  const sql = "SELECT store_amount AS balance FROM student_accounts WHERE id = ?";
+  try {
+    const [results] = await db.query(sql, [req.params.id]);
+    // results is an array of rows
+    res.json({ balance: results[0]?.balance || 0 });
+  } catch (err) {
+    console.error("Error fetching balance:", err);
+    res.status(500).json({ error: err.message || err });
+  }
+});
+
+// Update student balance
+router.put("/student/:id/balance", async (req, res) => {
+  const { newBalance } = req.body;
+  const sql = "UPDATE student_accounts SET store_amount = ? WHERE id = ?";
+  try {
+    const [result] = await db.query(sql, [newBalance, req.params.id]);
+    // You can check result.affectedRows if needed
+    res.json({ message: "Balance updated" });
+  } catch (err) {
+    console.error("Error updating balance:", err);
+    res.status(500).json({ error: err.message || err });
+  }
+});
+
+
+
 module.exports = router;

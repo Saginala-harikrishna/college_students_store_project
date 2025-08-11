@@ -5,28 +5,34 @@ function StudentSearch({ onStudentFound }) {
   const [storeNumber, setStoreNumber] = useState("");
   const [error, setError] = useState("");
 
-  const handleSearch = async () => {
-    if (!storeNumber.trim()) {
-      setError("Please enter a Store Number");
-      return;
-    }
-    try {
-      setError(""); // Clear any old errors
-      const res = await axios.get(`http://localhost:5000/api/student/search/${storeNumber}`);
+ const handleSearch = async () => {
+  if (!storeNumber.trim()) {
+    setError("Please enter a Store Number");
+    onStudentFound(null, "Please enter a Store Number");
+    return;
+  }
 
-      if (res.status === 200 && res.data) {
-        onStudentFound(res.data); // Pass student data to BuildingBase
-      } else {
-        setError("Student not found");
-      }
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        setError("Student not found");
-      } else {
-        setError("An error occurred while searching");
-      }
+  try {
+    setError("");
+    const res = await axios.get(`http://localhost:5000/api/student/search/${storeNumber}`);
+
+    if (res.status === 200 && res.data) {
+      onStudentFound(res.data, null); // ✅ send data and null error
+    } else {
+      setError("Student not found");
+      onStudentFound(null, "Student not found");
     }
-  };
+  } catch (err) {
+    if (err.response && err.response.status === 404) {
+      setError("Student not found");
+      onStudentFound(null, "Student not found");
+    } else {
+      setError("An error occurred while searching");
+      onStudentFound(null, "An error occurred while searching");
+    }
+  }
+};
+
 
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
