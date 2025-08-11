@@ -9,6 +9,7 @@ const BillingPage = () => {
   const [error, setError] = useState('');
   const [cart, setCart] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  
 
   const handleStudentFound = (studentData, errorMessage) => {
     if (studentData) {
@@ -95,6 +96,9 @@ const BillingPage = () => {
        onRemoveFromCart={handleRemoveFromCart}
        onClearCart={handleClearCart}
        studentId={selectedStudentId} 
+       studentEmail={student?.email}
+
+
     />
 
       </div>

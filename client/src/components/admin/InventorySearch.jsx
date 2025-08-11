@@ -72,4 +72,4 @@ function InventorySearch({ onAddToCart }) {
   );
 }
 
-export default InventorySearch;
+export default InventorySearch;  

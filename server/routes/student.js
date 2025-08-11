@@ -21,7 +21,8 @@ router.post('/add-student', async (req, res) => {
     branch,
     year,
     course_type,
-    transaction_id
+    transaction_id,
+    store_amount 
   } = req.body;
 
   try {
@@ -32,15 +33,15 @@ router.post('/add-student', async (req, res) => {
       INSERT INTO student_accounts (
         store_number, full_name, email, dob, gender,
         phone_number, admission_number, branch, year,
-        course_type, transaction_id
+        course_type, transaction_id,store_amount 
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
     `;
 
     const values = [
       store_number, full_name, email, dob, gender,
       phone_number, admission_number, branch, year,
-      course_type, transaction_id
+      course_type, transaction_id,store_amount
     ];
 
     await db.execute(query, values);
@@ -84,9 +85,9 @@ router.get('/dashboard-stats', async (req, res) => {
   }
 });
 
-// =============================
+
 // Search student by store number
-// =============================
+
 router.get('/search/:storeNumber', async (req, res) => {
   const storeNumber = req.params.storeNumber;
 

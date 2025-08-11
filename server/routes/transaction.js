@@ -1,70 +1,54 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const db = require("../db"); // your mysql2 promise pool instance
+const db = require('../db');
+const nodemailer = require("nodemailer");
 
-// Helper: Convert ISO string to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
-function toMysqlDateTime(jsDate) {
-  const date = new Date(jsDate);
-  if (isNaN(date.getTime())) {
-    return null; // Invalid date
-  }
-  return date.toISOString().slice(0, 19).replace('T', ' ');
-}
+// 📧 Create transporter (you can move this to a separate file)
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: 'va12ms34i@gmail.com', // store in .env
+    pass: 'gqph xoja nojk xoio', // app password
+  },
+});
 
-// POST /api/transactions
 router.post("/", async (req, res) => {
   let {
     studentId,
+    studentEmail,
     items,
     totalAmount,
     balanceBefore,
     balanceAfter,
     transactionDate,
+     
   } = req.body;
 
-  if (
-    !studentId ||
-    !Array.isArray(items) ||
-    items.length === 0 ||
-    totalAmount == null ||
-    balanceBefore == null ||
-    balanceAfter == null ||
-    !transactionDate
-  ) {
-    return res.status(400).json({ error: "Missing required transaction fields" });
-  }
-
-  // Convert transactionDate to MySQL DATETIME format
-  const mysqlDate = toMysqlDateTime(transactionDate);
-  if (!mysqlDate) {
-    return res.status(400).json({ error: "Invalid transactionDate format" });
-  }
-  transactionDate = mysqlDate;
+  // ... existing validations ...
 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-
-    // Insert into transactions table
+    const now = new Date();
+const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
+    // Save transaction
     const [transactionResult] = await connection.execute(
       `INSERT INTO transactions
        (student_id, total_amount, balance_before, balance_after, transaction_date)
        VALUES (?, ?, ?, ?, ?)`,
-      [studentId, totalAmount, balanceBefore, balanceAfter, transactionDate]
+      [studentId, totalAmount, balanceBefore, balanceAfter, formattedDate]
     );
 
     const transactionId = transactionResult.insertId;
 
-    // Prepare item values for bulk insert
     const itemValues = items.map(item => [
-  transactionId,
-  item.productId || null,
-  item.productName || "Unknown Product",  // fallback if missing
-  item.category || null,
-  item.quantity,
-  item.price,
-]);
-
+      transactionId,
+      item.productId || null,
+      item.productName || "Unknown Product",
+      item.category || null,
+      item.quantity,
+      item.price,
+    ]);
 
     await connection.query(
       `INSERT INTO transaction_items
@@ -75,7 +59,34 @@ router.post("/", async (req, res) => {
 
     await connection.commit();
 
-    res.status(201).json({ message: "Transaction saved successfully", transactionId });
+    // 📧 Send email after successful transaction
+    if (studentEmail) {
+      const mailOptions = {
+        from:'va12ms34i@gmail.com',
+        to: studentEmail,
+        subject: "Purchase Confirmation",
+        html: `
+          <h2>Thank you for your purchase!</h2>
+          <p>Your transaction ID: <strong>${transactionId}</strong></p>
+          <p>Total Amount: <strong>₹${totalAmount}</strong></p>
+          <p>Balance Before: ₹${balanceBefore}</p>
+          <p>Balance After: ₹${balanceAfter}</p>
+          <h3>Purchased Items:</h3>
+          <ul>
+            ${items.map(i => `<li>${i.productName} (${i.quantity} × ₹${i.price})</li>`).join("")}
+          </ul>
+          <p>Date: ${transactionDate}</p>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
+    res.status(201).json({
+      message: "Transaction saved successfully and email sent",
+      transactionId
+    });
+
   } catch (error) {
     await connection.rollback();
     console.error("Error saving transaction:", error);

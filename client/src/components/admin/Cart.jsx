@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onClearCart }) {
+function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onClearCart,studentEmail }) {
   const [balance, setBalance] = useState(0);
   const [fetchingBalance, setFetchingBalance] = useState(false);
 
@@ -64,6 +64,7 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
       // 2) Prepare transaction data
 const transactionData = {
   studentId,
+  studentEmail,
   items: cart.map(item => ({
     productId: item.id,
     productName: item.product_name || item.name,  // fallback to 'name'
