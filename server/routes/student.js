@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { sendWelcomeEmail } = require("./emailService");
 
 // Function to generate the next store number
 async function generateNextStoreNumber() {
@@ -45,6 +46,7 @@ router.post('/add-student', async (req, res) => {
     ];
 
     await db.execute(query, values);
+    await sendWelcomeEmail(email, full_name, store_amount,store_number);
 
     res.status(201).json({ success: true, store_number });
   } catch (error) {
@@ -71,7 +73,7 @@ router.get('/dashboard-stats', async (req, res) => {
   try {
     const [students] = await db.query(`SELECT COUNT(*) AS total_students FROM student_accounts`);
     const [lowBalance] = await db.query(`SELECT COUNT(*) AS low_balance_students FROM student_accounts WHERE store_amount < 50`);
-    const [transactions] = await db.query(`SELECT COUNT(*) AS total_transactions, SUM(total_price) AS total_spent FROM transactions`);
+    const [transactions] = await db.query(`SELECT COUNT(*) AS total_transactions, SUM(total_amount) AS total_spent FROM transactions`);
    
     res.json({
       total_students: students[0].total_students,

@@ -51,7 +51,7 @@ const DashboardStatsCards = () => {
 
       <div className="stat-card">
         <h3>Total Balance</h3>
-        <p>₹{stats.totalBalance.toFixed(2)}</p>
+        <p>₹{stats.totalBalance}</p>
       </div>
 
       <div className="stat-card">
