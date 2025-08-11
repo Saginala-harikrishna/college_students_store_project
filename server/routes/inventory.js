@@ -33,14 +33,24 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/inventory/list - Fetch all inventory
-router.get('/list', async (req, res) => {
+router.get("/items", async (req, res) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM inventory_items ORDER BY date_added DESC');
+    // Select all columns, but alias product_name as name for frontend compatibility
+    const [rows] = await db.query(`
+      SELECT 
+        id,
+        product_name AS name,
+        category,
+        quantity,
+        price,
+        description,
+        date_added
+      FROM inventory_items
+    `);
     res.json(rows);
-  } catch (err) {
-    console.error('Error fetching inventory:', err);
-    res.status(500).json({ error: 'Failed to fetch inventory items' });
+  } catch (error) {
+    console.error("Error fetching inventory items:", error);
+    res.status(500).json({ error: "Failed to fetch inventory items" });
   }
 });
 

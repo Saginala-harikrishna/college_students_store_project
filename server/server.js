@@ -5,6 +5,7 @@ const app = express();
 const authRoutes = require("./routes/auth");
 const studentRoutes = require('./routes/student');
 const inventoryRoutes = require('./routes/inventory');
+const transactionRouter = require("./routes/transaction");
 
 
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api", authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use("/api/transactions", transactionRouter);
 
 
 

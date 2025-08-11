@@ -1,23 +1,19 @@
 import React, { useEffect, useState } from "react";
 
-function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onClearCart, }) {
+function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onClearCart }) {
   const [balance, setBalance] = useState(0);
   const [fetchingBalance, setFetchingBalance] = useState(false);
 
   // Fetch student balance when studentId changes
   const fetchBalance = async () => {
-    console.log("1");
     if (!studentId) {
       setBalance(0);
       return;
     }
     try {
       setFetchingBalance(true);
-    
       const res = await fetch(`http://localhost:5000/api/inventory/student/${studentId}/balance`);
-     
       const data = await res.json();
-    
       setBalance(Number(data.balance || 0));
     } catch (err) {
       console.error("Error fetching balance:", err);
@@ -27,34 +23,30 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
     }
   };
 
-useEffect(() => {
-  console.log("Fetching balance for studentId:", studentId);
-  fetchBalance();
-}, [studentId]);
-
+  useEffect(() => {
+    fetchBalance();
+  }, [studentId]);
 
   const total = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
   const remaining = balance - total;
 
-  // Confirm purchase: update balance on server and clear cart locally
+  // Confirm purchase: update balance and save transaction
   const confirmPurchase = async () => {
     if (!studentId) {
       alert("Please select a student before confirming purchase.");
       return;
     }
-
     if (cart.length === 0) {
       alert("Cart is empty.");
       return;
     }
-
     if (total > balance) {
       alert("Insufficient amount in the student's account.");
       return;
     }
 
     try {
-      // PUT new balance to backend (inventory router mount: /api/inventory)
+      // 1) Update student balance
       const newBalance = Number((balance - total).toFixed(2));
       const res = await fetch(`http://localhost:5000/api/inventory/student/${studentId}/balance`, {
         method: "PUT",
@@ -69,10 +61,49 @@ useEffect(() => {
         return;
       }
 
-      // Clear local cart
-      onClearCart?.();
+      // 2) Prepare transaction data
+const transactionData = {
+  studentId,
+  items: cart.map(item => ({
+    productId: item.id,
+    productName: item.product_name || item.name,  // fallback to 'name'
+    category: item.category,
+    quantity: item.quantity,
+    price: item.price,
+  })),
+  totalAmount: total,
+  balanceBefore: balance,
+  balanceAfter: newBalance,
+  transactionDate: new Date().toISOString(),
+};
 
-      // Refresh balance from server (just to be safe)
+
+console.log("Cart items before confirming purchase:", cart);
+const invalidItems = cart.filter(item => !item.name);
+if (invalidItems.length > 0) {
+  console.warn("Items missing product_name:", invalidItems);
+  alert("Some items have missing product names!");
+  return;
+}
+
+
+
+      // 3) Save transaction to backend
+      const transactionRes = await fetch("http://localhost:5000/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transactionData),
+      });
+
+      if (!transactionRes.ok) {
+        const error = await transactionRes.json();
+        console.error("Failed to save transaction:", error);
+        alert("Purchase succeeded but failed to save transaction history.");
+        return;
+      }
+
+      // 4) Clear local cart and refresh balance
+      onClearCart?.();
       await fetchBalance();
 
       alert("Purchase successful!");
@@ -97,7 +128,9 @@ useEffect(() => {
       <p>
         Remaining After Purchase:&nbsp;
         <strong style={{ color: remaining < 0 ? "crimson" : "inherit" }}>
-          {remaining < 0 ? `-₹${Math.abs(remaining).toFixed(2)} (Insufficient)` : `₹${remaining.toFixed(2)}`}
+          {remaining < 0
+            ? `-₹${Math.abs(remaining).toFixed(2)} (Insufficient)`
+            : `₹${remaining.toFixed(2)}`}
         </strong>
       </p>
 
@@ -106,7 +139,16 @@ useEffect(() => {
       ) : (
         <>
           {cart.map((item) => (
-            <div key={item.id} className="cart-item" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div
+              key={item.id}
+              className="cart-item"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+              }}
+            >
               <div>
                 <div style={{ fontWeight: 600 }}>{item.product_name}</div>
                 <div style={{ fontSize: 13, color: "#555" }}>{item.category}</div>
@@ -136,10 +178,7 @@ useEffect(() => {
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </div>
 
-                <button
-                  onClick={() => onRemoveFromCart?.(item.id)}
-                  style={{ marginLeft: 12 }}
-                >
+                <button onClick={() => onRemoveFromCart?.(item.id)} style={{ marginLeft: 12 }}>
                   Remove
                 </button>
               </div>
@@ -148,15 +187,20 @@ useEffect(() => {
 
           <hr />
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 8,
+            }}
+          >
             <strong>Total: ₹{total.toFixed(2)}</strong>
             <div>
               <button onClick={confirmPurchase} style={{ marginRight: 8 }}>
                 Confirm Purchase
               </button>
-              <button onClick={() => onClearCart?.()}>
-                Clear Cart
-              </button>
+              <button onClick={() => onClearCart?.()}>Clear Cart</button>
             </div>
           </div>
         </>

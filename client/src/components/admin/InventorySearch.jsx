@@ -1,22 +1,37 @@
-import React, { useState } from "react";
-
-const dummyInventory = [
-  { id: 1, name: "Notebook", category: "Stationery", price: 50 },
-  { id: 2, name: "Pen", category: "Stationery", price: 10 },
-  { id: 3, name: "Water Bottle", category: "Accessories", price: 120 },
-  { id: 4, name: "Calculator", category: "Electronics", price: 500 },
-];
+import React, { useState, useEffect } from "react";
 
 function InventorySearch({ onAddToCart }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const filteredItems = dummyInventory.filter(item => {
-    return (
-      item.name.toLowerCase().includes(search.toLowerCase()) &&
-      (category === "" || item.category === category)
-    );
-  });
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("http://localhost:5000/api/inventory/items");
+        if (!res.ok) throw new Error("Failed to fetch inventory");
+        const data = await res.json();
+       
+        setInventory(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInventory();
+  }, []);
+
+  const filteredItems = inventory.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()) &&
+    (category === "" || item.category === category)
+  );
+
+  if (loading) return <p>Loading inventory...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="card">
@@ -34,15 +49,19 @@ function InventorySearch({ onAddToCart }) {
         style={{ marginBottom: "15px", padding: "6px", width: "100%" }}
       >
         <option value="">All Categories</option>
-        <option value="Stationery">Stationery</option>
-        <option value="Accessories">Accessories</option>
+        <option value="Stationary">Stationary</option>
+        <option value="Services">Services</option>
         <option value="Electronics">Electronics</option>
+        <option value="Food">Food</option>
+        
       </select>
 
       {filteredItems.length > 0 ? (
-        filteredItems.map(item => (
+        filteredItems.map((item) => (
           <div key={item.id} className="inventory-item">
-            <span>{item.name} - ₹{item.price}</span>
+            <span>
+              {item.name} - ₹{item.price}
+            </span>
             <button onClick={() => onAddToCart(item)}>Add</button>
           </div>
         ))
