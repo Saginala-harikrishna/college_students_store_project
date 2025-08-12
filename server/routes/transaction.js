@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
   try {
     await connection.beginTransaction();
     const now = new Date();
+    console.log(now);
 const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
     // Save transaction
     const [transactionResult] = await connection.execute(

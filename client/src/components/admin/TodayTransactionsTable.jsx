@@ -12,6 +12,7 @@ const TodayTransactionsTable = () => {
       try {
         const response = await axios.get("http://localhost:5000/api/transactions/today");
         setTransactions(response.data);
+        console.log(response.data);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching transactions:", err);

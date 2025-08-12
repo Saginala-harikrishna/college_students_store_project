@@ -1,0 +1,73 @@
+/* Main Container */
+.dashboard-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Title */
+.dashboard-title {
+  text-align: center;
+  color: #222;
+  margin-bottom: 20px;
+}
+
+/* Card */
+.dashboard-card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Highlight Balance */
+.balance-box {
+  background: linear-gradient(135deg, #4cafef, #007acc);
+  color: white;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.balance-box h2 {
+  margin: 0;
+  font-size: 20px;
+  opacity: 0.9;
+}
+
+.balance-box p {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 5px 0 0 0;
+}
+
+/* Student Info Grid */
+.student-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.student-info div {
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.student-info strong {
+  color: #333;
+}
+
+/* Status Messages */
+.loading, .error, .no-data {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 50px;
+}
+
+.error {
+  color: red;
+}

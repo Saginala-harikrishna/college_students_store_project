@@ -26,13 +26,16 @@ const Home = () => {
       });
 
       const data = await response.json();
-
+        console.log(data);
       if (data.success) {
-        // Redirect based on role
-        if (data.role === 'admin') {
-          navigate('/admin/dashboard');
+        
+        // Redirect based on role from backend
+        if (data.data.role === 'admin') {
+          navigate('/admin/dashboard', { state: { userData: data } });
+        } else if (data.data.role === 'student') {
+          navigate('/student/dashboard', { state: { userData: data } });
         } else {
-          navigate('/student/dashboard');
+          setError('Unknown role. Please contact support.');
         }
       } else {
         setError(data.message || 'Invalid email or password.');

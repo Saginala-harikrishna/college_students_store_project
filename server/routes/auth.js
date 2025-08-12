@@ -15,14 +15,17 @@ router.post('/login', async (req, res) => {
       return res.json({ success: false, message: 'Invalid credentials' });
     }
 
+
     const user = rows[0];
+    
+
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch || user.role !== role) {
       return res.json({ success: false, message: 'Invalid credentials or role' });
     }
 
-    return res.json({ success: true, role: user.role });
+    return res.json({ success: true, data: user });
 
   } catch (err) {
     console.error("Login Error: ", err);
