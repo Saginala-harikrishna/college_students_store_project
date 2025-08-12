@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 const db = require('../db');
 const { sendWelcomeEmail } = require("./emailService");
 
@@ -11,6 +12,9 @@ async function generateNextStoreNumber() {
   return `STU${10000 + nextId}`;
 }
 
+
+
+// Add student and user account
 router.post('/add-student', async (req, res) => {
   const {
     full_name,
@@ -23,43 +27,69 @@ router.post('/add-student', async (req, res) => {
     year,
     course_type,
     transaction_id,
-    store_amount 
+    store_amount
   } = req.body;
 
+  const connection = await db.getConnection();
   try {
-    // Generate next store number
+    await connection.beginTransaction();
+
+    // 1. Generate store number
     const store_number = await generateNextStoreNumber();
 
-    const query = `
+    // 2. Insert into student_accounts
+    const insertStudentQuery = `
       INSERT INTO student_accounts (
         store_number, full_name, email, dob, gender,
         phone_number, admission_number, branch, year,
-        course_type, transaction_id,store_amount 
+        course_type, transaction_id, store_amount
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-
-    const values = [
+    const studentValues = [
       store_number, full_name, email, dob, gender,
       phone_number, admission_number, branch, year,
-      course_type, transaction_id,store_amount
+      course_type, transaction_id, store_amount
     ];
+    await connection.execute(insertStudentQuery, studentValues);
 
-    await db.execute(query, values);
-    await sendWelcomeEmail(email, full_name, store_amount,store_number);
+    // 3. Create hashed password from store_number
+    const hashedPassword = await bcrypt.hash(store_number, 10);
+
+    // 4. Insert into users table
+    const insertUserQuery = `
+      INSERT INTO users (
+        store_id, name, email, password, year_of_study, role
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const userValues = [
+      store_number, full_name, email, hashedPassword, year, 'student'
+    ];
+    await connection.execute(insertUserQuery, userValues);
+
+    // 5. Send welcome email
+    await sendWelcomeEmail(email, full_name, store_amount, store_number);
+
+    // 6. Commit transaction
+    await connection.commit();
 
     res.status(201).json({ success: true, store_number });
   } catch (error) {
+    await connection.rollback();
     console.error('Error adding student:', error);
     res.status(500).json({ success: false, message: 'Server error' });
+  } finally {
+    connection.release();
   }
 });
 
-// Assuming you already have: const db = require("../db"); // MySQL2/promise pool
+
+
 
 router.get("/low-balance", async (req, res) => {
   try {
-    console.log("Entry into /low-balance");
+    
 
     let { search = "", year = "", branch = "", limit = 10 } = req.query;
 
@@ -91,7 +121,6 @@ router.get("/low-balance", async (req, res) => {
     query += " LIMIT ?";
     params.push(limit);
 
-    console.log("Final query:", query, params);
 
     const [rows] = await db.query(query, params);
     res.json(rows);
@@ -110,7 +139,7 @@ router.get('/dashboard-stats', async (req, res) => {
   try {
     const [students] = await db.query(`SELECT COUNT(*) AS total_students FROM student_accounts`);
     const [lowBalance] = await db.query(`SELECT COUNT(*) AS low_balance_students FROM student_accounts WHERE store_amount < 50`);
-    const [transactions] = await db.query(`SELECT COUNT(*) AS total_transactions, SUM(total_amount) AS total_spent FROM transactions`);
+    const [transactions] = await db.query(`SELECT COUNT(*) AS total_transactions, SUM(store_amount) AS total_spent FROM student_accounts`);
    
     res.json({
       total_students: students[0].total_students,
@@ -160,4 +189,63 @@ router.get('/search/:storeNumber', async (req, res) => {
 });
 
 
+router.put('/:id', async (req, res) => {
+  const studentId = req.params.id ?? null; // fallback to null
+  const { full_name, email, branch, store_amount } = req.body;
+
+
+  try {
+    const updateQuery = `
+      UPDATE student_accounts
+      SET full_name = ?, email = ?, branch = ?, store_amount = ?
+      WHERE id = ?
+    `;
+
+    const [updateResult] = await db.execute(updateQuery, [
+      full_name ?? null,
+      email ?? null,
+      branch ?? null,
+      store_amount ?? null,
+      studentId
+    ]);
+
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    const [rows] = await db.execute(
+      'SELECT * FROM student_accounts WHERE id = ?',
+      [studentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Student not found after update' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('Error updating student:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+router.delete('/:id', async (req, res) => {
+  const studentId = req.params.id;
+
+  try {
+    const [result] = await db.execute('DELETE FROM student_accounts WHERE id = ?', [studentId]);
+
+    if (result.affectedRows === 0) {
+      // No student found with this ID
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Successful deletion
+    res.json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting student:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 module.exports = router;

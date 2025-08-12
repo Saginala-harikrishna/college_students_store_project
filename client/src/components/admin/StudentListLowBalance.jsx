@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../css/StudentListLowBalance.css';
 import AddStudentModal from './AddStudentModal';
+import EditStudentModal from './EditStudentModal'; // Import your modal component
 import axios from 'axios';
 
 const StudentListLowBalance = () => {
@@ -16,7 +17,7 @@ const StudentListLowBalance = () => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [deletingStudent, setDeletingStudent] = useState(null);
 
-  // ✅ Fetch data from backend with filters
+  // Fetch students from backend
   const fetchStudents = () => {
     const params = {};
 
@@ -49,17 +50,14 @@ const StudentListLowBalance = () => {
       });
   };
 
-  // ✅ Initial load
   useEffect(() => {
     fetchStudents();
   }, []);
 
-  // ✅ Fetch whenever filters change
   useEffect(() => {
     fetchStudents();
   }, [searchTerm, yearFilter, branchFilter]);
 
-  // ✅ Format year display
   const formatYear = (year) => {
     switch (year) {
       case 1: return "1st Year";
@@ -70,17 +68,16 @@ const StudentListLowBalance = () => {
     }
   };
 
-  // ✅ Handle add
   const handleAddStudent = (formData) => {
     console.log('Connecting to backend with:', formData);
     alert('✅ Connecting to backend...');
     setShowForm(false);
   };
 
-  // ✅ Handle edit save
+  // Save changes from EditStudentModal
   const handleSaveEdit = (updatedData) => {
     axios
-      .put(`http://localhost:5000/api/student/${editingStudent.id}`, updatedData)
+      .put(`http://localhost:5000/api/student/${updatedData.id}`, updatedData)
       .then(() => {
         setEditingStudent(null);
         fetchStudents();
@@ -88,7 +85,6 @@ const StudentListLowBalance = () => {
       .catch(err => console.error("Error updating student:", err));
   };
 
-  // ✅ Handle delete confirm
   const handleConfirmDelete = () => {
     axios
       .delete(`http://localhost:5000/api/student/${deletingStudent.id}`)
@@ -108,7 +104,7 @@ const StudentListLowBalance = () => {
         </button>
       </div>
 
-      {/* ✅ Filters UI */}
+      {/* Filters */}
       <div className="filters">
         <input
           type="text"
@@ -135,7 +131,7 @@ const StudentListLowBalance = () => {
         </select>
       </div>
 
-      {/* ✅ List of Low Balance Students */}
+      {/* Students List */}
       <div className="students-list">
         {students.map((student) => (
           <div key={student.id} className="student-card">
@@ -166,34 +162,16 @@ const StudentListLowBalance = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+      {/* Edit Student Modal */}
       {editingStudent && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Edit Student</h3>
-            <input
-              type="text"
-              defaultValue={editingStudent.name}
-              onChange={(e) =>
-                setEditingStudent({ ...editingStudent, name: e.target.value })
-              }
-            />
-            <input
-              type="number"
-              defaultValue={editingStudent.store_amount}
-              onChange={(e) =>
-                setEditingStudent({ ...editingStudent, store_amount: e.target.value })
-              }
-            />
-            <div className="modal-actions">
-              <button onClick={() => handleSaveEdit(editingStudent)}>Save</button>
-              <button onClick={() => setEditingStudent(null)}>Cancel</button>
-            </div>
-          </div>
-        </div>
+        <EditStudentModal
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSave={handleSaveEdit}
+        />
       )}
 
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation Modal */}
       {deletingStudent && (
         <div className="modal">
           <div className="modal-content">
