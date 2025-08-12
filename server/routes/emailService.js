@@ -13,7 +13,7 @@ async function sendWelcomeEmail(to, name, store_amount,store_number) {
   const mailOptions = {
     from: 'va12ms34i@gmail.com',
     to,
-    subject: "Welcome to J&UA Store Account 🎉",
+    subject: "Welcome to JNTUA Store Account 🎉",
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px;">
         <h2>Welcome to J&UA Store, ${name}!</h2>

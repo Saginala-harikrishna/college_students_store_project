@@ -9,7 +9,7 @@ const ProductTable = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/inventory/list');
+      const res = await fetch('http://localhost:5000/api/inventory/items');
       const data = await res.json();
       setProducts(data);
     } catch (err) {
@@ -70,7 +70,7 @@ const ProductTable = () => {
       <table className="product-table">
         <thead>
           <tr>
-            <th>#</th>
+            <th>S.NO</th>
             <th>Item Name</th>
             <th>Category</th>
             <th>Qty</th>
@@ -88,7 +88,7 @@ const ProductTable = () => {
             products.map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>
-                <td>{item.product_name}</td>
+                <td>{item.name}</td>
                 <td>{item.category}</td>
                 <td>{item.quantity}</td>
                 <td>{item.price}</td>

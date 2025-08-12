@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../../css/DashboardSubNav.css';
 import StudentListLowBalance from './StudentListLowBalance';
-// import TodayTransactionsTable from './TodayTransactionsTable';
+ import TodayTransactionsTable from './TodayTransactionsTable';
 // import ReportsSection from './ReportsSection';
 
 const DashboardSubNav = () => {
@@ -12,7 +12,7 @@ const DashboardSubNav = () => {
       case 'Students':
         return <StudentListLowBalance />;
       case 'Transactions':
-        return //<TodayTransactionsTable />;
+        return <TodayTransactionsTable />;
       case 'Reports':
         return //<ReportsSection />;
       default:

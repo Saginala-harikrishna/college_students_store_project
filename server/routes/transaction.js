@@ -96,4 +96,39 @@ const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
   }
 });
 
+
+
+router.get("/today", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+          s.full_name,
+          s.store_number,
+          t.id AS transaction_id,
+          t.transaction_date,
+          i.product_name,
+          i.category,
+          ti.quantity,
+          ti.price,
+          t.total_amount
+      FROM transactions t
+      JOIN student_accounts s 
+          ON t.student_id = s.id
+      JOIN transaction_items ti
+          ON t.id = ti.transaction_id
+      JOIN inventory_items i
+          ON ti.product_id = i.id
+      WHERE DATE(t.transaction_date) = CURDATE()
+      ORDER BY t.transaction_date;
+    `;
+
+    const [rows] = await db.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+
 module.exports = router;

@@ -4,7 +4,7 @@ import '../../css/modal.css';
 const EditProductModal = ({ item, onClose, onSave }) => {
   const [formData, setFormData] = useState({
   id: item.id,
-  product_name: item.product_name,
+  product_name: item.name,
   category: item.category,
   quantity: item.quantity,
   price: item.price,

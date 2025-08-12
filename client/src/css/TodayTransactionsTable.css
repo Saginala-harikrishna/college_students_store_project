@@ -1,0 +1,62 @@
+.transactions-container {
+  padding: 20px;
+  background: #f9f9f9;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.transactions-container h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.loading,
+.error,
+.no-data {
+  font-size: 16px;
+  padding: 10px;
+  color: #666;
+}
+
+.error {
+  color: red;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.transactions-table th,
+.transactions-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.transactions-table th {
+  background-color: #2e86de;
+  color: white;
+  font-weight: bold;
+}
+
+.transactions-table tbody tr:nth-child(even) {
+  background-color: #f2f6fc;
+}
+
+.transactions-table tbody tr:hover {
+  background-color: #dff0ff;
+  transition: background 0.2s;
+}
+
+.transactions-table td {
+  border-bottom: 1px solid #ddd;
+}
+
+.transactions-table td:last-child {
+  font-weight: bold;
+  color: #27ae60;
+}

@@ -55,19 +55,56 @@ router.post('/add-student', async (req, res) => {
   }
 });
 
-router.get('/low-balance', async (req, res) => {
+// Assuming you already have: const db = require("../db"); // MySQL2/promise pool
+
+router.get("/low-balance", async (req, res) => {
   try {
-    const [rows] = await db.query(`
-      SELECT id, full_name, store_number, year, store_amount
-      FROM student_accounts
-      WHERE store_amount < 50
-    `);
+    console.log("Entry into /low-balance");
+
+    let { search = "", year = "", branch = "", limit = 10 } = req.query;
+
+    limit = Number(limit) || 10;
+
+    let query = "SELECT * FROM student_accounts WHERE 1=1";
+    let params = [];
+
+    // ✅ Search filter (case-insensitive, both name & admission number)
+    if (search && search.trim() !== "") {
+      query += " AND (LOWER(full_name) LIKE ? OR LOWER(admission_number) LIKE ?)";
+      const searchTerm = `%${search.trim().toLowerCase()}%`;
+      params.push(searchTerm, searchTerm);
+    }
+
+    // ✅ Year filter
+    if (year) {
+      query += " AND year = ?";
+      params.push(Number(year));
+    }
+
+    // ✅ Branch filter
+    if (branch && branch.trim() !== "") {
+      query += " AND LOWER(branch) = ?";
+      params.push(branch.trim().toLowerCase());
+    }
+
+    // ✅ Limit
+    query += " LIMIT ?";
+    params.push(limit);
+
+    console.log("Final query:", query, params);
+
+    const [rows] = await db.query(query, params);
     res.json(rows);
+
   } catch (err) {
-    console.error("Error fetching low balance students:", err);
-    res.status(500).json({ error: "Database error" });
+    console.error("Route crashed:", err);
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
+;
+
+
+
 
 router.get('/dashboard-stats', async (req, res) => {
   try {

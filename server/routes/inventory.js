@@ -33,6 +33,8 @@ router.post('/', async (req, res) => {
   }
 });
 
+
+
 router.get("/items", async (req, res) => {
   try {
     // Select all columns, but alias product_name as name for frontend compatibility
