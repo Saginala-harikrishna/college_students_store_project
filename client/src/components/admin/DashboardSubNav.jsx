@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../../css/DashboardSubNav.css';
 import StudentListLowBalance from './StudentListLowBalance';
  import TodayTransactionsTable from './TodayTransactionsTable';
-// import ReportsSection from './ReportsSection';
+ import ReportSection from './ReportSection';
 
 const DashboardSubNav = () => {
   const [activeTab, setActiveTab] = useState('Students');
@@ -14,7 +14,7 @@ const DashboardSubNav = () => {
       case 'Transactions':
         return <TodayTransactionsTable />;
       case 'Reports':
-        return //<ReportsSection />;
+        return <ReportSection />;
       default:
         return null;
     }

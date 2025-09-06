@@ -137,21 +137,46 @@ router.get("/low-balance", async (req, res) => {
 
 router.get('/dashboard-stats', async (req, res) => {
   try {
-    const [students] = await db.query(`SELECT COUNT(*) AS total_students FROM student_accounts`);
-    const [lowBalance] = await db.query(`SELECT COUNT(*) AS low_balance_students FROM student_accounts WHERE store_amount < 50`);
-    const [transactions] = await db.query(`SELECT COUNT(*) AS total_transactions, SUM(store_amount) AS total_spent FROM student_accounts`);
-   
+    // Total students
+    const [students] = await db.query(`
+      SELECT COUNT(*) AS total_students 
+      FROM student_accounts
+    `);
+
+    // Students with low balance
+    const [lowBalance] = await db.query(`
+      SELECT COUNT(*) AS low_balance_students 
+      FROM student_accounts 
+      WHERE store_amount < 50
+    `);
+
+    // Total transactions today
+    const [transactions] = await db.query(`
+      SELECT COUNT(*) AS total_transactions
+      FROM transactions
+      WHERE DATE(transaction_date) = CURDATE()
+    `);
+
+    // Total store amount from all students
+    const [storeTotal] = await db.query(`
+      SELECT COALESCE(SUM(store_amount), 0) AS total_store_amount
+      FROM student_accounts
+    `);
+
     res.json({
       total_students: students[0].total_students,
       low_balance_students: lowBalance[0].low_balance_students,
       total_transactions: transactions[0].total_transactions,
-      total_spent: transactions[0].total_spent || 0,
+      total_spent: storeTotal[0].total_store_amount, // updated value
     });
+
   } catch (err) {
     console.error("Dashboard stats error:", err);
     res.status(500).json({ error: "Database error while fetching dashboard stats" });
   }
 });
+
+
 
 
 // Search student by store number
@@ -272,6 +297,35 @@ router.get("/email/:email", async (req, res) => {
   }
 });
 
+// Get all transactions for a student
+router.get("/transactions/:studentId", async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    const [transactions] = await db.query(
+      `
+      SELECT 
+        t.id AS transaction_id,
+        t.transaction_date,
+        ti.product_name,
+        ti.category,
+        ti.quantity,
+        ti.price,
+        (ti.quantity * ti.price) AS total_price
+      FROM transactions t
+      JOIN transaction_items ti ON ti.transaction_id = t.id
+      WHERE t.student_id = ?
+      ORDER BY t.transaction_date DESC
+      `,
+      [studentId]
+    );
+
+    res.json(transactions);
+  } catch (err) {
+    console.error("Error fetching student transactions:", err);
+    res.status(500).json({ error: "Database error while fetching transactions" });
+  }
+});
 
 
 module.exports = router;

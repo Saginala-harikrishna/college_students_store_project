@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import "../css/StudentDashboard.css"; // Import CSS file
+import "../css/StudentDashboard.css";
 
 const StudentDashboard = () => {
   const location = useLocation();
   const { userData } = location.state || {};
-  console.log(userData);
   const email = userData?.data?.email;
 
   const [student, setStudent] = useState(null);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,10 +17,19 @@ const StudentDashboard = () => {
     if (email) {
       const fetchStudent = async () => {
         try {
+          // Fetch student details
           const res = await axios.get(
             `http://localhost:5000/api/student/email/${email}`
           );
           setStudent(res.data);
+
+          // Fetch transactions using student id
+          if (res.data?.id) {
+            const txRes = await axios.get(
+              `http://localhost:5000/api/student/transactions/${res.data.id}`
+            );
+            setTransactions(txRes.data);
+          }
         } catch (err) {
           console.error("Error fetching student details:", err);
           setError("Failed to fetch student details");
@@ -45,13 +54,13 @@ const StudentDashboard = () => {
 
       {student ? (
         <div className="dashboard-card">
-          {/* Highlight Current Balance */}
+          {/* Balance Section */}
           <div className="balance-box">
             <h2>Current Balance</h2>
             <p>₹{student.store_amount}</p>
           </div>
 
-          {/* Student Info in Grid */}
+          {/* Student Info */}
           <div className="student-info">
             <div><strong>Name:</strong> {student.full_name}</div>
             <div><strong>Email:</strong> {student.email}</div>
@@ -63,6 +72,39 @@ const StudentDashboard = () => {
             <div><strong>Year:</strong> {student.year}</div>
             <div><strong>Course Type:</strong> {student.course_type}</div>
             <div><strong>Store Number:</strong> {student.store_number}</div>
+          </div>
+
+          {/* Transaction History */}
+          <div className="transaction-history">
+            <h2>Transaction History</h2>
+            {transactions.length > 0 ? (
+              <table className="transaction-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((tx, index) => (
+                    <tr key={index}>
+                      <td>{new Date(tx.transaction_date).toLocaleString()}</td>
+                      <td>{tx.product_name}</td>
+                      <td>{tx.category}</td>
+                      <td>{tx.quantity}</td>
+                      <td>₹{tx.price}</td>
+                      <td>₹{tx.total_price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No transactions found.</p>
+            )}
           </div>
         </div>
       ) : (

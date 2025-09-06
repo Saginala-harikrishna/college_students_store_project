@@ -7,6 +7,8 @@ import AdminLayout from './components/admin/AdminLayout';
 import Inventory from './pages/admin/Inventory';
 import BillingPage from './pages/admin/BillingPage';
 
+
+
 const App = () => {
   return (
     <Router>
@@ -23,7 +25,9 @@ const App = () => {
           {/* Later: Add billing, inventory, transactions here */}
         </Route>
       </Routes>
+            
     </Router>
+    
   );
 };
 

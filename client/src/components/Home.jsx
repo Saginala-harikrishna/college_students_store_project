@@ -47,7 +47,7 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <h1 className="title">Smart Canteen System</h1>
+      <h1 className="title">Smart Store System</h1>
       <form className="login-form" onSubmit={handleLogin}>
         <h2>Login</h2>
         {error && <p className="error">{error}</p>}

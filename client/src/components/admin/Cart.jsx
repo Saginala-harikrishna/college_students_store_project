@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 
-function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onClearCart,studentEmail }) {
+function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onClearCart, studentEmail }) {
   const [balance, setBalance] = useState(0);
   const [fetchingBalance, setFetchingBalance] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [modal, setModal] = useState({ visible: false, message: "", type: "" });
 
-  // Fetch student balance when studentId changes
   const fetchBalance = async () => {
     if (!studentId) {
       setBalance(0);
@@ -30,23 +31,34 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
   const total = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
   const remaining = balance - total;
 
-  // Confirm purchase: update balance and save transaction
+  const showModal = (message, type = "info") => {
+    setModal({ visible: true, message, type });
+    if (!purchasing) {
+      setTimeout(() => setModal({ visible: false, message: "", type: "" }), 3000);
+    }
+  };
+
   const confirmPurchase = async () => {
     if (!studentId) {
-      alert("Please select a student before confirming purchase.");
+      showModal("Please select a student before confirming purchase.", "warning");
       return;
     }
     if (cart.length === 0) {
-      alert("Cart is empty.");
+      showModal("Cart is empty.", "info");
       return;
     }
     if (total > balance) {
-      alert("Insufficient amount in the student's account.");
+      showModal("Insufficient amount in the student's account.", "error");
       return;
     }
 
+    if (purchasing) return;
+    setPurchasing(true);
+    showModal("Processing purchase...", "info");
+
+    onClearCart?.();
+
     try {
-      // 1) Update student balance
       const newBalance = Number((balance - total).toFixed(2));
       const res = await fetch(`http://localhost:5000/api/inventory/student/${studentId}/balance`, {
         method: "PUT",
@@ -57,39 +69,26 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
       if (!res.ok) {
         const err = await res.json();
         console.error("Failed to update balance:", err);
-        alert("Failed to complete purchase on server.");
+        showModal("Failed to complete purchase on server.", "error");
         return;
       }
 
-      // 2) Prepare transaction data
-const transactionData = {
-  studentId,
-  studentEmail,
-  items: cart.map(item => ({
-    productId: item.id,
-    productName: item.product_name || item.name,  // fallback to 'name'
-    category: item.category,
-    quantity: item.quantity,
-    price: item.price,
-  })),
-  totalAmount: total,
-  balanceBefore: balance,
-  balanceAfter: newBalance,
-  transactionDate: new Date().toISOString(),
-};
+      const transactionData = {
+        studentId,
+        studentEmail,
+        items: cart.map(item => ({
+          productId: item.id,
+          productName: item.product_name || item.name,
+          category: item.category,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        totalAmount: total,
+        balanceBefore: balance,
+        balanceAfter: newBalance,
+        transactionDate: new Date().toISOString(),
+      };
 
-
-console.log("Cart items before confirming purchase:", cart);
-const invalidItems = cart.filter(item => !item.name);
-if (invalidItems.length > 0) {
-  console.warn("Items missing product_name:", invalidItems);
-  alert("Some items have missing product names!");
-  return;
-}
-
-
-
-      // 3) Save transaction to backend
       const transactionRes = await fetch("http://localhost:5000/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,23 +98,23 @@ if (invalidItems.length > 0) {
       if (!transactionRes.ok) {
         const error = await transactionRes.json();
         console.error("Failed to save transaction:", error);
-        alert("Purchase succeeded but failed to save transaction history.");
+        showModal("Purchase saved but transaction history failed.", "warning");
         return;
       }
 
-      // 4) Clear local cart and refresh balance
-      onClearCart?.();
       await fetchBalance();
-
-      alert("Purchase successful!");
+      showModal("Purchase successful!", "success");
     } catch (err) {
       console.error("Purchase error:", err);
-      alert("Something went wrong during purchase.");
+      showModal("Something went wrong during purchase.", "error");
+    } finally {
+      setPurchasing(false);
+      setTimeout(() => setModal({ visible: false, message: "", type: "" }), 3000);
     }
   };
 
   return (
-    <div className="card">
+    <div className="card" style={{ position: "relative" }}>
       <h3>Cart</h3>
 
       <p>
@@ -140,9 +139,7 @@ if (invalidItems.length > 0) {
       ) : (
         <>
           {cart.map((item) => (
-            <div
-              key={item.id}
-              className="cart-item"
+            <div key={item.id} className="cart-item"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -157,28 +154,16 @@ if (invalidItems.length > 0) {
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <button
-                  onClick={() => onDecrease?.(item.id)}
-                  aria-label={`Decrease ${item.product_name}`}
-                  style={{ width: 30, height: 30 }}
-                >
+                <button onClick={() => onDecrease?.(item.id)} style={{ width: 30, height: 30 }}>
                   −
                 </button>
-
                 <div style={{ minWidth: 28, textAlign: "center" }}>{item.quantity}</div>
-
-                <button
-                  onClick={() => onIncrease?.(item.id)}
-                  aria-label={`Increase ${item.product_name}`}
-                  style={{ width: 30, height: 30 }}
-                >
+                <button onClick={() => onIncrease?.(item.id)} style={{ width: 30, height: 30 }}>
                   +
                 </button>
-
                 <div style={{ minWidth: 90, textAlign: "right", marginLeft: 12 }}>
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </div>
-
                 <button onClick={() => onRemoveFromCart?.(item.id)} style={{ marginLeft: 12 }}>
                   Remove
                 </button>
@@ -188,23 +173,78 @@ if (invalidItems.length > 0) {
 
           <hr />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: 8,
-            }}
-          >
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 8,
+          }}>
             <strong>Total: ₹{total.toFixed(2)}</strong>
             <div>
-              <button onClick={confirmPurchase} style={{ marginRight: 8 }}>
-                Confirm Purchase
+              <button onClick={confirmPurchase} disabled={purchasing} style={{ marginRight: 8 }}>
+                {purchasing ? "Processing..." : "Confirm Purchase"}
               </button>
               <button onClick={() => onClearCart?.()}>Clear Cart</button>
             </div>
           </div>
         </>
+      )}
+
+      {/* Inline modal */}
+      {modal.visible && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: 20,
+              borderRadius: 8,
+              minWidth: 250,
+              textAlign: "center",
+              color:
+                modal.type === "error" ? "crimson" :
+                modal.type === "success" ? "green" :
+                modal.type === "warning" ? "orange" : "black",
+              fontWeight: 600,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            {purchasing && (
+              <div style={{
+                border: "4px solid #f3f3f3",
+                borderTop: "4px solid #3498db",
+                borderRadius: "50%",
+                width: 24,
+                height: 24,
+                animation: "spin 1s linear infinite"
+              }} />
+            )}
+            {modal.message}
+          </div>
+
+          {/* Spinner CSS */}
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
       )}
     </div>
   );

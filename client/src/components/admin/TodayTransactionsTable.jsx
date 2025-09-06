@@ -12,7 +12,7 @@ const TodayTransactionsTable = () => {
       try {
         const response = await axios.get("http://localhost:5000/api/transactions/today");
         setTransactions(response.data);
-        console.log(response.data);
+       
         setLoading(false);
       } catch (err) {
         console.error("Error fetching transactions:", err);
@@ -43,8 +43,9 @@ const TodayTransactionsTable = () => {
               <th>Product</th>
               <th>Category</th>
               <th>Quantity</th>
-              <th>Price</th>
+             
               <th>Total Amount</th>
+              <th>Time</th>
             </tr>
           </thead>
           <tbody>
@@ -57,8 +58,20 @@ const TodayTransactionsTable = () => {
                 <td>{txn.product_name}</td>
                 <td>{txn.category}</td>
                 <td>{txn.quantity}</td>
-                <td>₹{txn.price}</td>
+              
                 <td>₹{txn.total_amount}</td>
+                <td>
+                   {new Date(txn.transaction_date).toLocaleString("en-IN", { 
+                     timeZone: "Asia/Kolkata",
+                     year: "numeric",
+                     month: "2-digit",
+                     day: "2-digit",
+                     hour: "2-digit",
+                     minute: "2-digit",
+                     hour12: true
+                   })}
+                 </td>
+
               </tr>
             ))}
           </tbody>

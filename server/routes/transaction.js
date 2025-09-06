@@ -29,9 +29,11 @@ router.post("/", async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-    const now = new Date();
-    console.log(now);
-const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
+   const moment = require('moment-timezone');
+const formattedDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+// 2025-08-13 19:32:15
+
+
     // Save transaction
     const [transactionResult] = await connection.execute(
       `INSERT INTO transactions
@@ -101,7 +103,7 @@ const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
 
 router.get("/today", async (req, res) => {
   try {
-    const query = `
+   const query = `
       SELECT 
           s.full_name,
           s.store_number,
@@ -111,7 +113,8 @@ router.get("/today", async (req, res) => {
           i.category,
           ti.quantity,
           ti.price,
-          t.total_amount
+          t.total_amount,
+          t.transaction_date
       FROM transactions t
       JOIN student_accounts s 
           ON t.student_id = s.id
@@ -119,10 +122,11 @@ router.get("/today", async (req, res) => {
           ON t.id = ti.transaction_id
       JOIN inventory_items i
           ON ti.product_id = i.id
-      WHERE DATE(t.transaction_date) = CURDATE()
-      ORDER BY t.transaction_date;
-    `;
+WHERE DATE(t.transaction_date) = CURDATE()
+      ORDER BY t.transaction_date desc;
+`;
 
+     
     const [rows] = await db.query(query);
     res.json(rows);
   } catch (err) {
