@@ -77,28 +77,3 @@ After purchase:
 
 
 
-
-root
-├── backend
-│   ├── src
-│   │   ├── routes
-│   │   ├── controllers
-│   │   ├── models
-│   │   ├── config
-│   │   └── utils
-│   └── server.js
-├── frontend
-│   ├── public
-│   └── src
-│       ├── components
-│       ├── pages
-│       ├── context
-│       ├── hooks
-│       └── App.js
-├── README.md
-└── package.json
-
-
-
-
-React, Node.js, Express.js, MySQL, Full Stack Development, JavaScript, Store Management System, CRUD, Inventory System, Student Portal, Admin Dashboard, Digital Transformation, AI in Development, Project-Based Learning
