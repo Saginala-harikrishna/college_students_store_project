@@ -1,0 +1,13 @@
+# Environment variables (never commit)
+.env
+server/.env
+client/.env
+
+# Node & build
+node_modules/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.vscode/
