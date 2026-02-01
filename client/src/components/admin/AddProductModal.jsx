@@ -24,7 +24,7 @@ const AddProductModal = ({ onClose }) => {
     }
 
     try {
-      const response =  await fetch('http://localhost:5000/api/inventory', {
+      const response =  await fetch('/api/inventory', {
 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -13,7 +13,7 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
     }
     try {
       setFetchingBalance(true);
-      const res = await fetch(`http://localhost:5000/api/inventory/student/${studentId}/balance`);
+      const res = await fetch(`/api/inventory/student/${studentId}/balance`);
       const data = await res.json();
       setBalance(Number(data.balance || 0));
     } catch (err) {
@@ -60,7 +60,7 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
 
     try {
       const newBalance = Number((balance - total).toFixed(2));
-      const res = await fetch(`http://localhost:5000/api/inventory/student/${studentId}/balance`, {
+      const res = await fetch(`/api/inventory/student/${studentId}/balance`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newBalance }),
@@ -89,7 +89,7 @@ function Cart({ studentId, cart, onIncrease, onDecrease, onRemoveFromCart, onCle
         transactionDate: new Date().toISOString(),
       };
 
-      const transactionRes = await fetch("http://localhost:5000/api/transactions", {
+      const transactionRes = await fetch("/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transactionData),

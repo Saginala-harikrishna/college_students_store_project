@@ -16,7 +16,7 @@ const DashboardStatsCards = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/student/dashboard-stats');
+        const response = await axios.get('/api/student/dashboard-stats');
 
         const data = response.data;
 

@@ -10,7 +10,7 @@ const TodayTransactionsTable = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/transactions/today");
+        const response = await axios.get("/api/transactions/today");
         setTransactions(response.data);
        
         setLoading(false);

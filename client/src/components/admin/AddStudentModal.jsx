@@ -38,7 +38,7 @@ const AddStudentModal = ({ onClose }) => {
     e.preventDefault();
 
     try {
-const response = await axios.post('http://localhost:5000/api/student/add-student', formData);
+const response = await axios.post('/api/student/add-student', formData);
       
       if (response.data.success) {
         alert(`Student Registered Successfully!\nStore ID: ${response.data.store_number}`);

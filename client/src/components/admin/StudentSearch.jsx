@@ -14,7 +14,7 @@ function StudentSearch({ onStudentFound }) {
 
   try {
     setError("");
-    const res = await axios.get(`http://localhost:5000/api/student/search/${storeNumber}`);
+    const res = await axios.get(`/api/student/search/${storeNumber}`);
 
     if (res.status === 200 && res.data) {
       onStudentFound(res.data, null); // ✅ send data and null error

@@ -24,7 +24,7 @@ const EditStudentModal = ({ student, onClose, onSave }) => {
 
     try {
          
-      const response = await fetch(`http://localhost:5000/api/student/${student.id}`, {
+      const response = await fetch(`/api/student/${student.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

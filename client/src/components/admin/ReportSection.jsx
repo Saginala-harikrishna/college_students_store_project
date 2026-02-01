@@ -3,15 +3,15 @@ import '../../css/ReportSection.css';
 import * as XLSX from "xlsx"; // For Excel export
 
 const dailyReports = [
-  { id: "studentWise", label: "Student-wise Sales Report", api: "http://localhost:5000/api/reports/daily/student-wise" },
-  { id: "itemWise", label: "Item-wise Sales Report", api: "http://localhost:5000/api/reports/daily/item-wise" },
-  { id: "lowBalance", label: "Low Balance Report", api: "http://localhost:5000/api/reports/daily/low-balance" },
+  { id: "studentWise", label: "Student-wise Sales Report", api: "/api/reports/daily/student-wise" },
+  { id: "itemWise", label: "Item-wise Sales Report", api: "/api/reports/daily/item-wise" },
+  { id: "lowBalance", label: "Low Balance Report", api: "/api/reports/daily/low-balance" },
 ];
 
 const monthlyReports = [
-  { id: "monthlySales", label: "Monthly Sales Summary", api: "http://localhost:5000/api/reports/monthly/sales-summary" },
-  { id: "inventoryUsage", label: "Inventory Usage Report", api: "http://localhost:5000/api/reports/monthly/inventory-usage" },
-  { id: "studentActivity", label: "Student Activity Report", api: "http://localhost:5000/api/reports/monthly/student-activity" },
+  { id: "monthlySales", label: "Monthly Sales Summary", api: "/api/reports/monthly/sales-summary" },
+  { id: "inventoryUsage", label: "Inventory Usage Report", api: "/api/reports/monthly/inventory-usage" },
+  { id: "studentActivity", label: "Student Activity Report", api: "/api/reports/monthly/student-activity" },
 ];
 
 const ReportSection = () => {

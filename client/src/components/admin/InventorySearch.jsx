@@ -11,7 +11,7 @@ function InventorySearch({ onAddToCart }) {
     const fetchInventory = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:5000/api/inventory/items");
+        const res = await fetch("/api/inventory/items");
         if (!res.ok) throw new Error("Failed to fetch inventory");
         const data = await res.json();
        

@@ -1,30 +1,30 @@
 const express = require("express");
 const cors = require("cors");
+
 const app = express();
 
+// Routes
 const authRoutes = require("./routes/auth");
-const studentRoutes = require('./routes/student');
-const inventoryRoutes = require('./routes/inventory');
+const studentRoutes = require("./routes/student");
+const inventoryRoutes = require("./routes/inventory");
 const transactionRouter = require("./routes/transaction");
 const reportRoutes = require("./routes/reports");
 
-
-
-
+// CORS (production-safe)
 app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true  
-}))
+  origin: "*",
+  credentials: true
+}));
+
 
 app.use(express.json());
 
+// API routes
 app.use("/api", authRoutes);
-app.use('/api/student', studentRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api/inventory", inventoryRoutes);
 app.use("/api/transactions", transactionRouter);
 app.use("/api/reports", reportRoutes);
 
-
-
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ✅ IMPORTANT: export app (NO app.listen)
+module.exports = app;

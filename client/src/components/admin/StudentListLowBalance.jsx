@@ -87,7 +87,7 @@ const StudentListLowBalance = () => {
 
   const handleConfirmDelete = () => {
     axios
-      .delete(`http://localhost:5000/api/student/${deletingStudent.id}`)
+      .delete(`/api/student/${deletingStudent.id}`)
       .then(() => {
         setDeletingStudent(null);
         fetchStudents();

@@ -9,7 +9,7 @@ const ProductTable = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/inventory/items');
+      const res = await fetch('/api/inventory/items');
       const data = await res.json();
       setProducts(data);
     } catch (err) {
@@ -34,7 +34,7 @@ const ProductTable = () => {
     if (!confirmed) return;
 
     try {
-      const res = await axios.delete(`http://localhost:5000/api/inventory/delete/${id}`);
+      const res = await axios.delete(`/api/inventory/delete/${id}`);
       alert("Product deleted!");
       fetchProducts(); // Refresh the table
     } catch (error) {
@@ -45,7 +45,7 @@ const ProductTable = () => {
 
   const handleSaveProduct = async (updatedData) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/inventory/update/${updatedData.id}`, {
+      const response = await fetch(`/api/inventory/update/${updatedData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
