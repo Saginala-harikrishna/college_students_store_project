@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import StudentSearch from '../../components/admin/StudentSearch';
 import InventorySearch from '../../components/admin/InventorySearch';
 import Cart from '../../components/admin/Cart';
-import '../../css/billingPage.css';
+import '../../css/BillingPage.css';
 
 const BillingPage = () => {
   const [student, setStudent] = useState(null);

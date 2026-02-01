@@ -69,6 +69,7 @@ const formattedDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
         to: studentEmail,
         subject: "Purchase Confirmation",
         html: `
+          <h2>From JNTUA CEA Store</h2>
           <h2>Thank you for your purchase!</h2>
           <p>Your transaction ID: <strong>${transactionId}</strong></p>
           <p>Total Amount: <strong>₹${totalAmount}</strong></p>
