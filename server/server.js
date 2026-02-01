@@ -20,11 +20,12 @@ app.use(cors({
 app.use(express.json());
 
 // API routes
-app.use("/api", authRoutes);
-app.use("/api/student", studentRoutes);
-app.use("/api/inventory", inventoryRoutes);
-app.use("/api/transactions", transactionRouter);
-app.use("/api/reports", reportRoutes);
+app.use("/", authRoutes);
+app.use("/student", studentRoutes);
+app.use("/inventory", inventoryRoutes);
+app.use("/transactions", transactionRouter);
+app.use("/reports", reportRoutes);
+
 
 // ✅ IMPORTANT: export app (NO app.listen)
 module.exports = app;
